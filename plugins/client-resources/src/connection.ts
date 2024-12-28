@@ -35,6 +35,7 @@ import core, {
   FindResult,
   LoadModelResponse,
   MeasureMetricsContext,
+  PersonId,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -124,7 +125,7 @@ class Connection implements ClientConnection {
     private readonly url: string,
     private readonly handler: TxHandler,
     readonly workspace: string,
-    readonly email: string,
+    readonly account: string,
     readonly opt?: ClientFactoryOptions
   ) {
     if (typeof sessionStorage !== 'undefined') {
@@ -169,7 +170,7 @@ class Connection implements ClientConnection {
         // No ping response from server.
 
         if (this.websocket !== null) {
-          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.email)
+          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.account)
           clearInterval(this.interval)
           this.websocket.close(1000)
           return
@@ -352,7 +353,7 @@ class Connection implements ClientConnection {
       const promise = this.requests.get(resp.id)
       if (promise === undefined) {
         console.error(
-          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`),
+          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.account}`),
           JSON.stringify(this.requests)
         )
         return
@@ -411,7 +412,7 @@ class Connection implements ClientConnection {
           'result: ',
           resp.result,
           this.workspace,
-          this.email
+          this.account
         )
         promise.reject(new PlatformError(resp.error))
       } else {
@@ -429,7 +430,7 @@ class Connection implements ClientConnection {
 
       for (const tx of txArr) {
         if (tx?._class === core.class.TxModelUpgrade) {
-          console.log('Processing upgrade', this.workspace, this.email)
+          console.log('Processing upgrade', this.workspace, this.account)
           this.opt?.onUpgrade?.()
           return
         }
@@ -589,7 +590,7 @@ class Connection implements ClientConnection {
         this.delay += 1
       }
       if (opened) {
-        console.error('client websocket error:', socketId, this.url, this.workspace, this.email)
+        console.error('client websocket error:', socketId, this.url, this.workspace, this.account)
       }
       void broadcastEvent(client.event.NetworkRequests, -1)
     }
@@ -795,7 +796,7 @@ export function connect (
   url: string,
   handler: TxHandler,
   workspace: string,
-  user: string,
+  user: PersonId,
   opt?: ClientFactoryOptions
 ): ClientConnection {
   return new Connection(

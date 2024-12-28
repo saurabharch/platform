@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import { personByIdStore, UserInfo } from '@hcengineering/contact-resources'
-  import { IdMap, getCurrentAccount, Ref, Class, Doc } from '@hcengineering/core'
+  import { IdMap, Ref, Class, Doc } from '@hcengineering/core'
   import {
     ModernButton,
     SplitButton,
@@ -151,7 +151,7 @@
     })
   }
 
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
   function canGoBack (joined: boolean, location: Location, meetingMinutes?: MeetingMinutes): boolean {
     if (!joined) return false
     if (location.path[2] !== loveId) return true

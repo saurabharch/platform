@@ -11,8 +11,9 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 import chunter from '@hcengineering/chunter'
-import { type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
+import { type Employee, type Person, getCurrentEmployee } from '@hcengineering/contact'
 import documents, {
   type ControlledDocument,
   type Document,
@@ -45,8 +46,7 @@ import core, {
   type TxOperations,
   type WithLookup,
   SortingOrder,
-  checkPermission,
-  getCurrentAccount
+  checkPermission
 } from '@hcengineering/core'
 import { type IntlString, translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -291,7 +291,7 @@ export async function completeRequest (
 ): Promise<void> {
   const req = await getActiveRequest(client, reqClass, controlledDoc)
 
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
 
   if (req == null || !req.requested.includes(me) || req.approved.includes(me)) {
     return
@@ -327,7 +327,7 @@ export async function rejectRequest (
     return
   }
 
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
 
   await saveComment(rejectionNote, req)
 
@@ -390,7 +390,7 @@ export const loginIntlFieldNames: Readonly<{ [K in keyof LoginInfo]: IntlString 
 export type DocumentStateTagType = 'effective' | 'inProgress' | 'rejected' | 'draft' | 'obsolete'
 
 export function isDocOwner (ownableDocument: { owner?: Ref<Employee> }): boolean {
-  const currentPerson = (getCurrentAccount() as PersonAccount)?.person
+  const currentPerson = getCurrentEmployee()
 
   return ownableDocument.owner === currentPerson
 }
@@ -606,15 +606,6 @@ export async function getControlledDocumentTitle (
   if (object === undefined) return ''
 
   return object.title
-}
-
-export const getCurrentEmployee = (): Ref<Employee> | undefined => {
-  const currentAccount = getCurrentAccount()
-  const person = (currentAccount as PersonAccount)?.person
-  if (person === null || person === undefined) {
-    return undefined
-  }
-  return person as Ref<Employee>
 }
 
 export async function createChildDocument (doc: ProjectDocument): Promise<void> {
