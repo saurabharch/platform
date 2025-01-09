@@ -16,6 +16,7 @@ import { RPCHandler } from '@hcengineering/rpc'
 import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
+  ClientSessionCtx,
   createDummyStorageAdapter,
   initStatisticsContext,
   loadBrandingMap,
