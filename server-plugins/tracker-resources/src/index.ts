@@ -14,7 +14,7 @@
 //
 
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import contact, { Employee, includesAny, Person, SocialIdentity } from '@hcengineering/contact'
+import { Person } from '@hcengineering/contact'
 import core, {
   PersonId,
   concatLink,
@@ -29,7 +29,6 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   WithLookup,
-  buildSocialIdString,
   AccountRole
 } from '@hcengineering/core'
 import { NotificationContent } from '@hcengineering/notification'
@@ -120,7 +119,7 @@ export async function getIssueNotificationContent (
     if (
       updateTx.operations.assignee !== null &&
       updateTx.operations.assignee !== undefined &&
-      await isSamePerson(control, updateTx.operations.assignee, target)
+      (await isSamePerson(control, updateTx.operations.assignee, target))
     ) {
       body = tracker.string.IssueAssignedToYou
     } else {
@@ -158,7 +157,9 @@ export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerContr
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return []
 
-  const defaultSpace = (await control.findAll(control.ctx, tracker.class.Project, { _id: tracker.project.DefaultProject }))[0]
+  const defaultSpace = (
+    await control.findAll(control.ctx, tracker.class.Project, { _id: tracker.project.DefaultProject })
+  )[0]
 
   if (defaultSpace === undefined) return []
 

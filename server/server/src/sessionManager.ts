@@ -284,9 +284,7 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, workspace, account)
   }
 
-  async getWorkspaceInfo (
-    token: string
-  ): Promise<WorkspaceInfoWithStatus | undefined> {
+  async getWorkspaceInfo (token: string): Promise<WorkspaceInfoWithStatus | undefined> {
     try {
       return await getAccountClient(this.accountsUrl, token).getWorkspaceInfo(true)
     } catch (err: any) {
@@ -297,9 +295,7 @@ class TSessionManager implements SessionManager {
     }
   }
 
-  async getAccount (
-    token: string
-  ): Promise<Account | undefined> {
+  async getAccount (token: string): Promise<Account | undefined> {
     try {
       const accountClient = getAccountClient(this.accountsUrl, token)
       const loginInfo = await accountClient.getLoginInfoByToken()
@@ -422,7 +418,7 @@ class TSessionManager implements SessionManager {
         extra: JSON.stringify(token.extra ?? {})
       })
       // Version mismatch, return upgrading.
-      return { upgrade: true, progress: workspaceInfo.mode === 'upgrading' ? (workspaceInfo.processingProgress ?? 0) : 0 }
+      return { upgrade: true, progress: workspaceInfo.mode === 'upgrading' ? workspaceInfo.processingProgress ?? 0 : 0 }
     }
 
     let workspace = this.workspaces.get(workspaceUuid)
@@ -804,9 +800,13 @@ class TSessionManager implements SessionManager {
             if (workspace !== undefined) {
               const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
               if (another === -1 && !workspace.upgrade) {
-                void this.trySetStatus(workspace.context, pipeline, sessionRef.session, false, workspace.workspaceUuid).catch(
-                  () => {}
-                )
+                void this.trySetStatus(
+                  workspace.context,
+                  pipeline,
+                  sessionRef.session,
+                  false,
+                  workspace.workspaceUuid
+                ).catch(() => {})
               }
             }
           }

@@ -85,10 +85,16 @@ describe('postgres operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, {
-      uuid: dbUuid,
-      url: dbUri
-    }, model)
+    const txStorage = await createPostgresTxAdapter(
+      mctx,
+      hierarchy,
+      dbUri,
+      {
+        uuid: dbUuid,
+        url: dbUri
+      },
+      model
+    )
 
     // Put all transactions to Tx
     for (const t of txes) {

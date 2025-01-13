@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Analytics } from '@hcengineering/analytics'
 import chunter from '@hcengineering/chunter'
 import { CollaboratorClient } from '@hcengineering/collaborator-client'

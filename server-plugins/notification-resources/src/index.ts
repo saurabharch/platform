@@ -281,7 +281,10 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
     const to = (attr.type as RefTo<Doc>).to
 
     if (hierarchy.isDerived(to, contact.class.Person)) {
-      const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: value, attachedToClass: contact.class.Person })
+      const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+        attachedTo: value,
+        attachedToClass: contact.class.Person
+      })
 
       return [pickPrimarySocialId(socialIds.map((it) => it.key))]
     }
@@ -293,7 +296,10 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
     if (arrOf._class === core.class.RefTo) {
       const to = (arrOf as RefTo<Doc>).to
       if (hierarchy.isDerived(to, contact.class.Person)) {
-        const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: { $in: value }, attachedToClass: contact.class.Person })
+        const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+          attachedTo: { $in: value },
+          attachedToClass: contact.class.Person
+        })
 
         const byPerson = socialIds.reduce<Record<Ref<Person>, PersonId[]>>((map, it) => {
           if (map[it.attachedTo] === undefined) {
@@ -543,16 +549,7 @@ export async function createPushFromInbox (
   }
 
   const path = [workbenchId, control.workspace.url, notificationId, encodeObjectURI(id, attachedToClass)]
-  await createPushNotification(
-    control,
-    receiver._id,
-    title,
-    body,
-    _id,
-    subscriptions,
-    senderPerson,
-    path
-  )
+  await createPushNotification(control, receiver._id, title, body, _id, subscriptions, senderPerson, path)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiver.space, {
     user: receiver._id,
     title,
@@ -998,10 +995,8 @@ export async function createCollabDocInfo (
     return res
   }
 
-  const usersInfo = await ctx.with(
-    'get-user-info',
-    {},
-    (ctx) => getUsersInfo(ctx, [...Array.from(targets), tx.modifiedBy], control)
+  const usersInfo = await ctx.with('get-user-info', {}, (ctx) =>
+    getUsersInfo(ctx, [...Array.from(targets), tx.modifiedBy], control)
   )
   const sender: SenderInfo = usersInfo.get(tx.modifiedBy) ?? {
     _id: tx.modifiedBy,
@@ -1134,15 +1129,11 @@ async function getSpaceCollabTxes (
   if (mixin !== undefined) {
     const collabs = control.hierarchy.as<Doc, Collaborators>(space, notification.mixin.Collaborators)
     if (collabs.collaborators !== undefined) {
-      return await createCollabDocInfo(
-        ctx,
-        collabs.collaborators,
-        control,
-        tx,
-        doc,
-        activityMessages,
-        { isSpace: true, isOwn: false, shouldUpdateTimestamp: true }
-      )
+      return await createCollabDocInfo(ctx, collabs.collaborators, control, tx, doc, activityMessages, {
+        isSpace: true,
+        isOwn: false,
+        shouldUpdateTimestamp: true
+      })
     }
   }
   return []
@@ -1494,16 +1485,7 @@ async function updateCollaboratorDoc (
 
     res = res.concat(
       await ctx.with('create-collab-docinfo', {}, (ctx) =>
-        createCollabDocInfo(
-          ctx,
-          collabsInfo.result,
-          control,
-          tx,
-          doc,
-          activityMessages,
-          params,
-          collabsInfo.removed
-        )
+        createCollabDocInfo(ctx, collabsInfo.result, control, tx, doc, activityMessages, params, collabsInfo.removed)
       )
     )
   } else {
@@ -1511,9 +1493,7 @@ async function updateCollaboratorDoc (
       getDocCollaborators(ctx, doc, mixin, control)
     )
     res.push(getMixinTx(tx, control, collaborators))
-    res = res.concat(
-      await createCollabDocInfo(ctx, collaborators, control, tx, doc, activityMessages, params)
-    )
+    res = res.concat(await createCollabDocInfo(ctx, collaborators, control, tx, doc, activityMessages, params))
   }
 
   res = res.concat(
@@ -1636,7 +1616,7 @@ async function applyUserTxes (
   }
 
   for (const [user, txs] of map.entries()) {
-    const person = (cache.get(user) as Person) ?? await getPerson(control, user)
+    const person = (cache.get(user) as Person) ?? (await getPerson(control, user))
     const personUuid = person?.personUuid
 
     if (personUuid !== undefined) {
@@ -1672,7 +1652,9 @@ async function updateCollaborators (
   const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
   const addedCollaborators = await getNewCollaborators(ops, mixin, objectClass, control)
   const isSpace = control.hierarchy.isDerived(objectClass, core.class.Space)
-  const removedCollaborators = isSpace ? await getRemovedMembers(ops, mixin, objectClass as Ref<Class<Space>>, control) : []
+  const removedCollaborators = isSpace
+    ? await getRemovedMembers(ops, mixin, objectClass as Ref<Class<Space>>, control)
+    : []
 
   if (removedCollaborators.length === 0 && addedCollaborators.length === 0) return []
 
@@ -1682,7 +1664,12 @@ async function updateCollaborators (
   if (doc === undefined) return []
 
   const res: Tx[] = []
-  const currentCollaborators = new Set(await getAllSocialStringsByPersonId(control, hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []))
+  const currentCollaborators = new Set(
+    await getAllSocialStringsByPersonId(
+      control,
+      hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []
+    )
+  )
   const toAdd = addedCollaborators.filter((p) => !currentCollaborators.has(p))
 
   if (toAdd.length === 0 && removedCollaborators.length === 0) return []
