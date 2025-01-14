@@ -33,7 +33,7 @@ import {
 import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { PlatformError, setMetadata, unknownError } from '@hcengineering/platform'
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
-import serverClientPlugin, { getTransactorEndpoint, getWorkspaceInfo } from '@hcengineering/server-client'
+import serverClientPlugin, { getTransactorEndpoint, getAccountClient } from '@hcengineering/server-client'
 import serverCore, {
   createContentAdapter,
   createPipeline,
@@ -251,7 +251,8 @@ export async function startIndexer (
     token: string,
     create: boolean = false
   ): Promise<WorkspaceIndexer | undefined> {
-    const workspaceInfo = await getWorkspaceInfo(token, false, undefined)
+    const accountClient = getAccountClient(token)
+    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
     let idx = indexers.get(workspace)
     if (idx === undefined && create) {
       if (workspaceInfo === undefined) {
