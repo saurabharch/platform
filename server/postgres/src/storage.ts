@@ -1272,7 +1272,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const keyA = isReverse ? 'docB' : 'docA'
       const keyB = isReverse ? 'docA' : 'docB'
       res.push(
-        `(SELECT jsonb_agg(assoc.*) FROM ${translateDomain(this.hierarchy.getDomain(_class))} AS assoc JOIN ${translateDomain(DOMAIN_RELATION)} as relation ON relation."${keyB}" = assoc."_id" AND relation."workspaceId" = '${this.workspaceId.name}' WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" AND assoc."workspaceId" = '${this.workspaceId.name}') AS assoc_${association[0]}`
+        `(SELECT jsonb_agg(assoc.*) FROM ${translateDomain(this.hierarchy.getDomain(_class))} AS assoc JOIN ${translateDomain(DOMAIN_RELATION)} as relation ON relation."${keyB}" = assoc."_id" AND relation."workspaceId" = '${this.workspaceId}' WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" AND assoc."workspaceId" = '${this.workspaceId}') AS assoc_${association[0]}`
       )
     }
     return res
